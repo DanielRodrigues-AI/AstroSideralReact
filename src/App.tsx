@@ -13,6 +13,7 @@ import { CameraTarget } from "./render/canvas/CameraTarget";
 import { TrailManager } from "./simulation/trails/TrailManager";
 import { calculateOrbitalVelocity } from "./utils/calculateOrbitalVelocity";
 import { HelpButton } from "./ui/controls/HelpButton";
+import { HotkeyManager } from "./ui/controls/HotkeyManager";
 
 function App() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -32,20 +33,18 @@ function App() {
     const entityManager = new EntityManager(scene.getBodies());
     const selectionManager = new SelectionManager();
     const camera = new Camera();
+    const hotkeys = new HotkeyManager();
     const cameraTarget = new CameraTarget();
     const trailManager = new TrailManager();
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key.toLowerCase() === "f") {
-        const selected = selectionManager.getSelected();
+hotkeys.bind("f", () => {
+  const selected = selectionManager.getSelected();
 
-        if (cameraTarget.get() === selected) {
-          cameraTarget.set(null);
-        } else {
-          cameraTarget.set(selected);
-        }
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
+  if (cameraTarget.get() === selected) {
+    cameraTarget.set(null);
+  } else {
+    cameraTarget.set(selected);
+  }
+});
     const handleWheel = (event: WheelEvent) => {
       event.preventDefault();
 
@@ -171,7 +170,7 @@ function App() {
       window.removeEventListener("resize", resize);
       canvas.removeEventListener("wheel", handleWheel);
       canvas.removeEventListener("click", handleClick);
-      window.removeEventListener("keydown", handleKeyDown);
+      hotkeys.destroy();
       engine.stop();
     };
   }, []);
