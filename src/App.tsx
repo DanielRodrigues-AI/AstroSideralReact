@@ -12,6 +12,7 @@ import { BodyInfoPanel } from "./ui/panels/BodyInfoPanel";
 import { CameraTarget } from "./render/canvas/CameraTarget";
 import { TrailManager } from "./simulation/trails/TrailManager";
 import { calculateOrbitalVelocity } from "./utils/calculateOrbitalVelocity";
+import { HelpButton } from "./ui/controls/HelpButton";
 
 function App() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -186,7 +187,7 @@ function App() {
           background: "#000010",
         }}
       />
-
+      <HelpButton />
       <BodyInfoPanel body={selectedBody} />
     </>
   );
