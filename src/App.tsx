@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { GameLoop } from "./core/engine/GameLoop";
 import { SolarSystemScene } from "./simulation/scenes/SolarSystemScene";
 import type { ForceSystem } from "./simulation/systems/ForceSystem";
@@ -7,10 +7,12 @@ import { CanvasRenderer } from "./render/canvas/CanvasRenderer";
 import { EntityManager } from "./simulation/entities/EntityManager";
 import { Camera } from "./render/canvas/Camera";
 import { Body } from "./simulation/entities/Body";
+import { SelectionManager } from "./simulation/selection/SelectionManager";
+import { BodyInfoPanel } from "./ui/panels/BodyInfoPanel";
 
 function App() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-
+  const [selectedBody, setSelectedBody] = useState<Body | null>(null);
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -24,6 +26,7 @@ function App() {
     }
     const scene = new SolarSystemScene(canvas.width / 2, canvas.height / 2);
     const entityManager = new EntityManager(scene.getBodies());
+    const selectionManager = new SelectionManager();
     const camera = new Camera();
     const handleWheel = (event: WheelEvent) => {
       event.preventDefault();
@@ -60,6 +63,30 @@ function App() {
       const worldY =
         (screenY - camera.viewportHeight / 2) / camera.zoom + camera.y;
 
+      let selected: Body | null = null;
+      let nearestDistance = Infinity;
+
+      for (const body of bodies) {
+        const dx = body.x - worldX;
+        const dy = body.y - worldY;
+
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        const radius = body.mass > 1000 ? 12 : 4;
+
+        if (distance <= radius && distance < nearestDistance) {
+          nearestDistance = distance;
+          selected = body;
+        }
+      }
+
+      if (selected) {
+        selectionManager.select(selected);
+        setSelectedBody(selected);
+        console.log("Selected:", selected);
+        return;
+      }
+
       entityManager.addBody(new Body(worldX, worldY, 10));
     };
     canvas.addEventListener("click", handleClick);
@@ -69,7 +96,7 @@ function App() {
     camera.viewportHeight = canvas.height;
     const systems: ForceSystem[] = [new GravitySystem()];
 
-    const renderer = new CanvasRenderer(ctx, bodies, camera);
+    const renderer = new CanvasRenderer(ctx, bodies, camera, selectionManager);
 
     const engine = new GameLoop(
       (dt) => {
@@ -100,15 +127,19 @@ function App() {
   }, []);
 
   return (
-    <canvas
-      ref={canvasRef}
-      style={{
-        display: "block",
-        width: "100vw",
-        height: "100vh",
-        background: "#000010",
-      }}
-    />
+    <>
+      <canvas
+        ref={canvasRef}
+        style={{
+          display: "block",
+          width: "100vw",
+          height: "100vh",
+          background: "#000010",
+        }}
+      />
+
+      <BodyInfoPanel body={selectedBody} />
+    </>
   );
 }
 
