@@ -10,6 +10,7 @@ import { Body } from "./simulation/entities/Body";
 import { SelectionManager } from "./simulation/selection/SelectionManager";
 import { BodyInfoPanel } from "./ui/panels/BodyInfoPanel";
 import { CameraTarget } from "./render/canvas/CameraTarget";
+import { TrailManager } from "./simulation/trails/TrailManager";
 
 function App() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -30,6 +31,7 @@ function App() {
     const selectionManager = new SelectionManager();
     const camera = new Camera();
     const cameraTarget = new CameraTarget();
+    const trailManager = new TrailManager();
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key.toLowerCase() === "f") {
         const selected = selectionManager.getSelected();
@@ -101,7 +103,10 @@ function App() {
         return;
       }
 
-      entityManager.addBody(new Body(worldX, worldY, 10));
+      const body = new Body(worldX, worldY, 10);
+
+      entityManager.addBody(body);
+      trailManager.clear(body);
     };
     canvas.addEventListener("click", handleClick);
 
@@ -110,7 +115,13 @@ function App() {
     camera.viewportHeight = canvas.height;
     const systems: ForceSystem[] = [new GravitySystem()];
 
-    const renderer = new CanvasRenderer(ctx, bodies, camera, selectionManager);
+    const renderer = new CanvasRenderer(
+      ctx,
+      bodies,
+      camera,
+      selectionManager,
+      trailManager,
+    );
 
     const engine = new GameLoop(
       (dt) => {
@@ -121,7 +132,7 @@ function App() {
         for (const b of bodies) {
           b.integrate(dt);
         }
-
+        trailManager.update(bodies);
         const target = cameraTarget.get();
 
         if (target) {
