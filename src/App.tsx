@@ -9,6 +9,7 @@ import { Camera } from "./render/canvas/Camera";
 import { Body } from "./simulation/entities/Body";
 import { SelectionManager } from "./simulation/selection/SelectionManager";
 import { BodyInfoPanel } from "./ui/panels/BodyInfoPanel";
+import { CameraTarget } from "./render/canvas/CameraTarget";
 
 function App() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -28,6 +29,19 @@ function App() {
     const entityManager = new EntityManager(scene.getBodies());
     const selectionManager = new SelectionManager();
     const camera = new Camera();
+    const cameraTarget = new CameraTarget();
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key.toLowerCase() === "f") {
+        const selected = selectionManager.getSelected();
+
+        if (cameraTarget.get() === selected) {
+          cameraTarget.set(null);
+        } else {
+          cameraTarget.set(selected);
+        }
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
     const handleWheel = (event: WheelEvent) => {
       event.preventDefault();
 
@@ -108,8 +122,15 @@ function App() {
           b.integrate(dt);
         }
 
-        camera.x = sun.x;
-        camera.y = sun.y;
+        const target = cameraTarget.get();
+
+        if (target) {
+          camera.x = target.x;
+          camera.y = target.y;
+        } else {
+          camera.x = sun.x;
+          camera.y = sun.y;
+        }
       },
       () => {
         renderer.render();
@@ -122,6 +143,7 @@ function App() {
       window.removeEventListener("resize", resize);
       canvas.removeEventListener("wheel", handleWheel);
       canvas.removeEventListener("click", handleClick);
+      window.removeEventListener("keydown", handleKeyDown);
       engine.stop();
     };
   }, []);
