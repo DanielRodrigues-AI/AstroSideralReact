@@ -11,6 +11,7 @@ import { SelectionManager } from "./simulation/selection/SelectionManager";
 import { BodyInfoPanel } from "./ui/panels/BodyInfoPanel";
 import { CameraTarget } from "./render/canvas/CameraTarget";
 import { TrailManager } from "./simulation/trails/TrailManager";
+import { calculateOrbitalVelocity } from "./utils/calculateOrbitalVelocity";
 
 function App() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -103,7 +104,22 @@ function App() {
         return;
       }
 
-      const body = new Body(worldX, worldY, 10);
+      let body: Body;
+
+      if (event.shiftKey) {
+        const { vx, vy } = calculateOrbitalVelocity(
+          sun.x,
+          sun.y,
+          worldX,
+          worldY,
+          sun.mass,
+          700,
+        );
+
+        body = new Body(worldX, worldY, 10, vx, vy);
+      } else {
+        body = new Body(worldX, worldY, 10);
+      }
 
       entityManager.addBody(body);
       trailManager.clear(body);
