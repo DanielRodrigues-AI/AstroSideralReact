@@ -15,6 +15,7 @@ import { calculateOrbitalVelocity } from "./utils/calculateOrbitalVelocity";
 import { HelpButton } from "./ui/controls/HelpButton";
 import { HotkeyManager } from "./ui/controls/HotkeyManager";
 import { VelocityVerletIntegrator } from "./simulation/systems/VelocityVerletIntegrator";
+import { EulerIntegrator } from "./simulation/systems/EulerIntegrator";
 
 function App() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -30,7 +31,12 @@ function App() {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
     }
-    const integrator = new VelocityVerletIntegrator();
+    const integratorType: "euler" | "verlet" = "verlet";
+
+    const integrator =
+      integratorType === "verlet"
+        ? new VelocityVerletIntegrator()
+        : new EulerIntegrator();
     const scene = new SolarSystemScene(canvas.width / 2, canvas.height / 2);
     const entityManager = new EntityManager(scene.getBodies());
     const selectionManager = new SelectionManager();
