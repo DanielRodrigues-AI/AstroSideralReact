@@ -51,6 +51,8 @@ export function HelpButton() {
           <div>* F: seguir/sol</div>
           <div>* Scroll: zoom</div>
           <div>* Click Qualquer corpo = aura</div>
+          <div>* Espaço: pausar/resume</div>
+          <div>* 1/2/5/0: velocidade x1/x2/x5/x10</div>
         </div>
       )}
     </>

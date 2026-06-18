@@ -3,6 +3,9 @@ export class GameLoop {
   private running = false;
   private frameId: number | null = null;
 
+  private timeScale = 1;
+  private paused = false;
+
   private update: (dt: number) => void;
   private render: () => void;
 
@@ -27,13 +30,43 @@ export class GameLoop {
     }
   }
 
+  pause(): void {
+    this.paused = true;
+  }
+
+  resume(): void {
+    this.paused = false;
+    this.lastTime = performance.now();
+  }
+
+  togglePause(): void {
+    this.paused = !this.paused;
+    this.lastTime = performance.now();
+  }
+
+  setSpeed(multiplier: 1 | 2 | 5 | 10): void {
+    this.timeScale = multiplier;
+  }
+
+  getSpeed(): number {
+    return this.timeScale;
+  }
+
+  isPaused(): boolean {
+    return this.paused;
+  }
+
   private loop = (time: number): void => {
     if (!this.running) return;
 
-    const dt = (time - this.lastTime) / 1000;
+    const rawDt = (time - this.lastTime) / 1000;
     this.lastTime = time;
 
-    this.update(dt);
+    if (!this.paused) {
+      const dt = rawDt * this.timeScale;
+      this.update(dt);
+    }
+
     this.render();
 
     this.frameId = requestAnimationFrame(this.loop);

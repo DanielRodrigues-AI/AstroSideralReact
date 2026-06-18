@@ -45,6 +45,35 @@ hotkeys.bind("f", () => {
     cameraTarget.set(selected);
   }
 });
+hotkeys.bind("f", () => {
+  const selected = selectionManager.getSelected();
+
+  if (cameraTarget.get() === selected) {
+    cameraTarget.set(null);
+  } else {
+    cameraTarget.set(selected);
+  }
+});
+
+hotkeys.bind(" ", () => {
+  engine.togglePause();
+});
+
+hotkeys.bind("1", () => {
+  engine.setSpeed(1);
+});
+
+hotkeys.bind("2", () => {
+  engine.setSpeed(2);
+});
+
+hotkeys.bind("5", () => {
+  engine.setSpeed(5);
+});
+
+hotkeys.bind("0", () => {
+  engine.setSpeed(10);
+});
     const handleWheel = (event: WheelEvent) => {
       event.preventDefault();
 
