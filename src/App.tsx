@@ -16,6 +16,7 @@ import { HelpButton } from "./ui/controls/HelpButton";
 import { HotkeyManager } from "./ui/controls/HotkeyManager";
 import { VelocityVerletIntegrator } from "./simulation/systems/VelocityVerletIntegrator";
 import { EulerIntegrator } from "./simulation/systems/EulerIntegrator";
+import { CollisionSystem } from "./simulation/Colision/CollisionSystem";
 
 function App() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -31,6 +32,10 @@ function App() {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
     }
+    /* trocar 1 pelo outro caso queira que conserve mais energia ou nao 
+    const integratorType: "euler" | "verlet" = "verlet";
+    const integratorType: "euler" | "verlet" = "euler";
+    */
     const integratorType: "euler" | "verlet" = "verlet";
 
     const integrator =
@@ -213,6 +218,7 @@ function App() {
     camera.viewportWidth = canvas.width;
     camera.viewportHeight = canvas.height;
     const systems: ForceSystem[] = [new GravitySystem()];
+    const collisionSystem = new CollisionSystem();
 
     const renderer = new CanvasRenderer(
       ctx,
@@ -247,7 +253,7 @@ function App() {
 
           integrator.beginStep(b, dt);
         }
-
+        collisionSystem.update(bodies);
         for (const b of bodies) {
           b.ax = 0;
           b.ay = 0;
