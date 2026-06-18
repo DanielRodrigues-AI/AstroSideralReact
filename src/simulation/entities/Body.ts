@@ -33,6 +33,9 @@ export class Body {
   ax = 0;
   ay = 0;
 
+  previousAx = 0;
+  previousAy = 0;
+  
   applyForce(fx: number, fy: number) {
     this.ax += fx / this.mass;
     this.ay += fy / this.mass;

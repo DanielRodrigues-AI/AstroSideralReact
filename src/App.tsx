@@ -14,7 +14,7 @@ import { TrailManager } from "./simulation/trails/TrailManager";
 import { calculateOrbitalVelocity } from "./utils/calculateOrbitalVelocity";
 import { HelpButton } from "./ui/controls/HelpButton";
 import { HotkeyManager } from "./ui/controls/HotkeyManager";
-import { EulerIntegrator } from "./simulation/systems/EulerIntegrator";
+import { VelocityVerletIntegrator } from "./simulation/systems/VelocityVerletIntegrator";
 
 function App() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -30,7 +30,7 @@ function App() {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
     }
-    const integrator = new EulerIntegrator();
+    const integrator = new VelocityVerletIntegrator();
     const scene = new SolarSystemScene(canvas.width / 2, canvas.height / 2);
     const entityManager = new EntityManager(scene.getBodies());
     const selectionManager = new SelectionManager();
@@ -38,15 +38,6 @@ function App() {
     const hotkeys = new HotkeyManager();
     const cameraTarget = new CameraTarget();
     const trailManager = new TrailManager();
-    hotkeys.bind("f", () => {
-      const selected = selectionManager.getSelected();
-
-      if (cameraTarget.get() === selected) {
-        cameraTarget.set(null);
-      } else {
-        cameraTarget.set(selected);
-      }
-    });
     hotkeys.bind("f", () => {
       const selected = selectionManager.getSelected();
 
@@ -227,6 +218,11 @@ function App() {
 
     const engine = new GameLoop(
       (dt) => {
+        for (const b of bodies) {
+          b.ax = 0;
+          b.ay = 0;
+        }
+
         for (const s of systems) {
           s.update(bodies, dt);
         }
@@ -238,13 +234,27 @@ function App() {
             b.x = b.parent.x + Math.cos(b.orbitAngle) * b.orbitRadius;
             b.y = b.parent.y + Math.sin(b.orbitAngle) * b.orbitRadius;
 
-            // evita acúmulo de física na lua
             b.vx = 0;
             b.vy = 0;
             continue;
           }
 
-          integrator.integrate(b, dt);
+          integrator.beginStep(b, dt);
+        }
+
+        for (const b of bodies) {
+          b.ax = 0;
+          b.ay = 0;
+        }
+
+        for (const s of systems) {
+          s.update(bodies, dt);
+        }
+
+        for (const b of bodies) {
+          if (b.parent && b.lockOrbit) continue;
+
+          integrator.endStep(b, dt);
         }
         trailManager.update(bodies);
         const target = cameraTarget.get();

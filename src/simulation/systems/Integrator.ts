@@ -1,5 +1,6 @@
 import { Body } from "../entities/Body";
 
 export interface Integrator {
-  integrate(body: Body, dt: number): void;
+  beginStep(body: Body, dt: number): void;
+  endStep(body: Body, dt: number): void;
 }
