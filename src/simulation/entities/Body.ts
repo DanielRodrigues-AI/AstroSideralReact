@@ -30,29 +30,12 @@ export class Body {
     this.parent = parent;
   }
 
-  private ax = 0;
-  private ay = 0;
+  ax = 0;
+  ay = 0;
 
   applyForce(fx: number, fy: number) {
     this.ax += fx / this.mass;
     this.ay += fy / this.mass;
-  }
-
-  integrate(dt: number) {
-    const ax = this.ax;
-    const ay = this.ay;
-
-    this.vx += ax * dt;
-    this.vy += ay * dt;
-
-    this.x += this.vx * dt;
-    this.y += this.vy * dt;
-
-    this.ax = 0;
-    this.ay = 0;
-
-    this.vx *= 1;
-    this.vy *= 1;
   }
 
   update(deltaTime: number) {
