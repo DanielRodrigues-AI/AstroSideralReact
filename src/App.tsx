@@ -74,6 +74,25 @@ hotkeys.bind("5", () => {
 hotkeys.bind("0", () => {
   engine.setSpeed(10);
 });
+hotkeys.bind("delete", () => {
+  const selected = selectionManager.getSelected();
+  if (!selected) return;
+
+  entityManager.removeBody(selected);
+  selectionManager.clear();
+  trailManager.clear(selected);
+  setSelectedBody(null);
+});
+
+hotkeys.bind("backspace", () => {
+  const selected = selectionManager.getSelected();
+  if (!selected) return;
+
+  entityManager.removeBody(selected);
+  selectionManager.clear();
+  trailManager.clear(selected);
+  setSelectedBody(null);
+});
     const handleWheel = (event: WheelEvent) => {
       event.preventDefault();
 
