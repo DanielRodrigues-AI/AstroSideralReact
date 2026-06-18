@@ -53,7 +53,7 @@ export function HelpButton() {
           <div>* Click Qualquer corpo = aura</div>
           <div>* Espaço: pausar/resume</div>
           <div>* 1/2/5/0: velocidade</div>
-          <div>* del: deleta um planeta</div>
+          <div>* Del: deleta um planeta</div>
         </div>
       )}
     </>

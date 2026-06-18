@@ -3,7 +3,7 @@ import { Body } from "../../simulation/entities/Body";
 export function createSolarSystem(centerX: number, centerY: number) {
   const bodies: Body[] = [];
 
-  const sun = new Body(centerX, centerY, 5000, 0, 0);
+  const sun = new Body(centerX, centerY, 8000, 0, 0);
   bodies.push(sun);
 
   const G = 700;
@@ -26,7 +26,7 @@ export function createSolarSystem(centerX: number, centerY: number) {
     const vx = -Math.sin(angle) * speed;
     const vy = Math.cos(angle) * speed;
 
-    bodies.push(new Body(x, y, p.mass, vx, vy));
+    bodies.push(new Body(x, y, p.mass * 1.5, vx, vy));
   }
 
   return bodies;

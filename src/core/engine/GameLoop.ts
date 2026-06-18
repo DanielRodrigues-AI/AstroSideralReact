@@ -59,13 +59,16 @@ export class GameLoop {
   private loop = (time: number): void => {
     if (!this.running) return;
 
-    const rawDt = (time - this.lastTime) / 1000;
-    this.lastTime = time;
+const rawDt = (time - this.lastTime) / 1000;
+this.lastTime = time;
 
-    if (!this.paused) {
-      const dt = rawDt * this.timeScale;
-      this.update(dt);
-    }
+// clamp para evitar “explosão” em 10x
+const clampedDt = Math.min(rawDt, 0.033); // ~30 FPS máximo por step
+
+if (!this.paused) {
+  const dt = clampedDt * Math.sqrt(this.timeScale);
+  this.update(dt);
+}
 
     this.render();
 

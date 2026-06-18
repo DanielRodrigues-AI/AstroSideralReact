@@ -36,63 +36,99 @@ function App() {
     const hotkeys = new HotkeyManager();
     const cameraTarget = new CameraTarget();
     const trailManager = new TrailManager();
-hotkeys.bind("f", () => {
-  const selected = selectionManager.getSelected();
+    hotkeys.bind("f", () => {
+      const selected = selectionManager.getSelected();
 
-  if (cameraTarget.get() === selected) {
-    cameraTarget.set(null);
-  } else {
-    cameraTarget.set(selected);
-  }
-});
-hotkeys.bind("f", () => {
-  const selected = selectionManager.getSelected();
+      if (cameraTarget.get() === selected) {
+        cameraTarget.set(null);
+      } else {
+        cameraTarget.set(selected);
+      }
+    });
+    hotkeys.bind("f", () => {
+      const selected = selectionManager.getSelected();
 
-  if (cameraTarget.get() === selected) {
-    cameraTarget.set(null);
-  } else {
-    cameraTarget.set(selected);
-  }
-});
+      if (cameraTarget.get() === selected) {
+        cameraTarget.set(null);
+      } else {
+        cameraTarget.set(selected);
+      }
+    });
 
-hotkeys.bind(" ", () => {
-  engine.togglePause();
-});
+    hotkeys.bind(" ", () => {
+      engine.togglePause();
+    });
 
-hotkeys.bind("1", () => {
-  engine.setSpeed(1);
-});
+    hotkeys.bind("1", () => {
+      engine.setSpeed(1);
+    });
 
-hotkeys.bind("2", () => {
-  engine.setSpeed(2);
-});
+    hotkeys.bind("2", () => {
+      engine.setSpeed(2);
+    });
 
-hotkeys.bind("5", () => {
-  engine.setSpeed(5);
-});
+    hotkeys.bind("5", () => {
+      engine.setSpeed(5);
+    });
 
-hotkeys.bind("0", () => {
-  engine.setSpeed(10);
-});
-hotkeys.bind("delete", () => {
-  const selected = selectionManager.getSelected();
-  if (!selected) return;
+    hotkeys.bind("0", () => {
+      engine.setSpeed(10);
+    });
+    hotkeys.bind("delete", () => {
+      const selected = selectionManager.getSelected();
+      if (!selected) return;
 
-  entityManager.removeBody(selected);
-  selectionManager.clear();
-  trailManager.clear(selected);
-  setSelectedBody(null);
-});
+      entityManager.removeBody(selected);
+      selectionManager.clear();
+      trailManager.clear(selected);
+      setSelectedBody(null);
+    });
 
-hotkeys.bind("backspace", () => {
-  const selected = selectionManager.getSelected();
-  if (!selected) return;
+    hotkeys.bind("backspace", () => {
+      const selected = selectionManager.getSelected();
+      if (!selected) return;
 
-  entityManager.removeBody(selected);
-  selectionManager.clear();
-  trailManager.clear(selected);
-  setSelectedBody(null);
-});
+      entityManager.removeBody(selected);
+      selectionManager.clear();
+      trailManager.clear(selected);
+      setSelectedBody(null);
+    });
+    hotkeys.bind("l", () => {
+      const selected = selectionManager.getSelected();
+      if (!selected) return;
+
+      const baseAngle = Math.random() * Math.PI * 2;
+      const angle = baseAngle + (Math.random() - 0.5) * 0.6; // “bagunça” o círculo
+
+      const minDistance = 25;
+      const maxDistance = 80;
+      const distance =
+        minDistance + Math.random() * (maxDistance - minDistance);
+
+      const worldX = selected.x + Math.cos(angle) * distance;
+      const worldY = selected.y + Math.sin(angle) * distance;
+
+      const { vx, vy } = calculateOrbitalVelocity(
+        selected.x,
+        selected.y,
+        worldX,
+        worldY,
+        selected.mass,
+        700,
+      );
+
+      const lua = new Body(worldX, worldY, 2, vx, vy, selected);
+
+      lua.orbitRadius = distance;
+      lua.orbitAngle = angle;
+      lua.orbitSpeed = Math.sqrt((700 * selected.mass) / distance);
+      lua.lockOrbit = true;
+
+      lua.orbitSpeedScale = 0.4; // ← AQUI
+
+      entityManager.addBody(lua);
+      trailManager.clear(lua);
+    });
     const handleWheel = (event: WheelEvent) => {
       event.preventDefault();
 
@@ -194,6 +230,18 @@ hotkeys.bind("backspace", () => {
         }
 
         for (const b of bodies) {
+          if (b.parent && b.lockOrbit) {
+            b.orbitAngle += b.orbitSpeed * b.orbitSpeedScale * dt;
+
+            b.x = b.parent.x + Math.cos(b.orbitAngle) * b.orbitRadius;
+            b.y = b.parent.y + Math.sin(b.orbitAngle) * b.orbitRadius;
+
+            // evita acúmulo de física na lua
+            b.vx = 0;
+            b.vy = 0;
+            continue;
+          }
+
           b.integrate(dt);
         }
         trailManager.update(bodies);

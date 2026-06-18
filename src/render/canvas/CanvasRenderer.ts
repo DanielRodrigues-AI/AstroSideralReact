@@ -34,14 +34,17 @@ export class CanvasRenderer {
       const x = this.camera.worldToScreenX(b.x);
       const y = this.camera.worldToScreenY(b.y);
 
-      this.ctx.arc(
-        x,
-        y,
-        (b.mass > 1000 ? 12 : 4) * this.camera.zoom,
-        0,
-        Math.PI * 2,
-      );
-      this.ctx.fillStyle = b.mass > 1000 ? "#ffaa00" : "#66ccff";
+      const radius =
+        b.mass > 6000 ? 16 : b.mass > 1000 ? 10 : b.mass > 3 ? 4 : 2;
+
+      this.ctx.arc(x, y, radius * this.camera.zoom, 0, Math.PI * 2);
+
+      this.ctx.fillStyle =
+        b.mass > 6000
+          ? "#ffcc55" // sol
+          : b.mass > 3
+            ? "#66ccff" // planeta
+            : "#aaaaaa"; // lua
       this.ctx.fill();
       if (this.selectionManager.getSelected() === b) {
         this.ctx.beginPath();
@@ -84,5 +87,5 @@ export class CanvasRenderer {
 
       this.ctx.stroke();
     }
-  };
+  }
 }
