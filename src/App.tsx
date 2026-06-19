@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { GameLoop } from "./core/engine/GameLoop";
 import { SolarSystemScene } from "./simulation/scenes/SolarSystemScene";
-import type { ForceSystem } from "./simulation/systems/ForceSystem";
-import { GravitySystem } from "./simulation/systems/GravitySystem";
+import type { ForceProvider } from "./simulation/systems/ForceProvider";
+import { GravityBarnesHutSystem } from "./simulation/systems/GravityBarnesHutSystem";
 import { CanvasRenderer } from "./render/canvas/CanvasRenderer";
 import { EntityManager } from "./simulation/entities/EntityManager";
 import { Camera } from "./render/canvas/Camera";
@@ -126,13 +126,11 @@ function App() {
       );
 
       const lua = new Body(worldX, worldY, 2, vx, vy, selected);
+      lua.parent = selected;
 
       lua.orbitRadius = distance;
       lua.orbitAngle = angle;
       lua.orbitSpeed = Math.sqrt((700 * selected.mass) / distance);
-      lua.lockOrbit = true;
-
-      lua.orbitSpeedScale = 0.4; // ← AQUI
 
       entityManager.addBody(lua);
       trailManager.clear(lua);
@@ -221,7 +219,18 @@ function App() {
     const sun = bodies[0];
     camera.viewportWidth = canvas.width;
     camera.viewportHeight = canvas.height;
-    const systems: ForceSystem[] = [new GravitySystem(50)];
+
+    const worldSize = Math.max(canvas.width, canvas.height) * 2;
+
+    const systems: ForceProvider[] = [
+      new GravityBarnesHutSystem(
+        canvas.width / 2,
+        canvas.height / 2,
+        worldSize,
+        50,
+        0.5,
+      ),
+    ];
     const collisionSystem = new CollisionSystem(entityManager);
     const energyCalculator = new EnergyCalculator(700);
     const renderer = new CanvasRenderer(
@@ -240,21 +249,10 @@ function App() {
         }
 
         for (const s of systems) {
-          s.update(bodies, dt);
+          s.compute(bodies, dt);
         }
 
         for (const b of bodies) {
-          if (b.parent && b.lockOrbit) {
-            b.orbitAngle += b.orbitSpeed * b.orbitSpeedScale * dt;
-
-            b.x = b.parent.x + Math.cos(b.orbitAngle) * b.orbitRadius;
-            b.y = b.parent.y + Math.sin(b.orbitAngle) * b.orbitRadius;
-
-            b.vx = 0;
-            b.vy = 0;
-            continue;
-          }
-
           integrator.beginStep(b, dt);
         }
         const merges = collisionSystem.update(bodies);
@@ -278,18 +276,9 @@ function App() {
             cameraTarget.set(merge.merged);
           }
         }
-        for (const b of bodies) {
-          b.ax = 0;
-          b.ay = 0;
-        }
-
-        for (const s of systems) {
-          s.update(bodies, dt);
-        }
 
         for (const b of bodies) {
-          if (b.parent && b.lockOrbit) continue;
-
+          if (b.parent) continue;
           integrator.endStep(b, dt);
         }
         trailManager.update(bodies);
@@ -310,7 +299,7 @@ function App() {
           console.log("Energy:", energy);
           energyTimer = 0;
         }
-        // log sobre energia gravitacional armazenada 
+        // log sobre energia gravitacional armazenada
       },
       () => {
         renderer.render();

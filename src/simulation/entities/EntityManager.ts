@@ -32,6 +32,9 @@ export class EntityManager {
 
         b.parent = null;
         b.lockOrbit = false;
+        b.orbitRadius = 0;
+        b.orbitAngle = 0;
+        b.orbitVelocity = 0;
 
         // herda movimento do planeta
         b.vx = vx;

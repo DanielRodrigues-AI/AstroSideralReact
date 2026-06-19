@@ -1,6 +1,7 @@
 import { Body } from "../entities/Body";
-import type { ForceSystem } from "./ForceSystem";
-export class GravitySystem implements ForceSystem {
+import type { ForceProvider } from "./ForceProvider";
+
+export class GravitySystem implements ForceProvider {
   private G = 700;
   private softening: number;
 
@@ -8,7 +9,7 @@ export class GravitySystem implements ForceSystem {
     this.softening = softening;
   }
 
-  update(bodies: Body[], _dt: number) {
+  compute(bodies: Body[], _dt: number) {
     const G = this.G;
     const softening = this.softening;
 
@@ -22,7 +23,7 @@ export class GravitySystem implements ForceSystem {
 
         const distSq = dx * dx + dy * dy;
 
-        const minDistSq = 0.25; // evita explosão numérica em proximidade extrema
+        const minDistSq = 0.25;
         const safeDistSq = Math.max(distSq, minDistSq);
 
         const distance = Math.sqrt(safeDistSq);

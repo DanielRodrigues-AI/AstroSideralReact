@@ -62,6 +62,13 @@ export class CollisionSystem {
 
     const merged = new Body(x, y, mass, vx, vy);
 
+    // preserva estado orbital (evita perda de órbita após merge)
+    merged.parent = a.parent ?? b.parent;
+    merged.lockOrbit = a.lockOrbit || b.lockOrbit;
+    merged.orbitRadius = a.orbitRadius || b.orbitRadius;
+    merged.orbitAngle = a.orbitAngle || b.orbitAngle;
+    merged.orbitVelocity = a.orbitVelocity || b.orbitVelocity;
+
     this.entityManager.removeBody(a);
     this.entityManager.removeBody(b);
     this.entityManager.addBody(merged);

@@ -14,7 +14,6 @@ export class Body {
   orbitRadius = 0;
   orbitAngle = 0;
   orbitSpeed = 0;
-  lockOrbit = false;
   orbitSpeedScale = 1;
   constructor(
     x: number,

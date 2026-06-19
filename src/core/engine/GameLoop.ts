@@ -66,7 +66,10 @@ export class GameLoop {
     const clampedDt = Math.min(rawDt, 0.033); // ~30 FPS máximo por step
 
     if (!this.paused) {
-      const baseDt = clampedDt * Math.sqrt(this.timeScale);
+      const timeScale = this.timeScale;
+      const safeScale =
+        Math.min(timeScale, 5) + Math.max(0, timeScale - 5) * 0.5;
+      const baseDt = clampedDt * safeScale;
 
       const maxStep = 0.016; // ~60 FPS seguro
       const steps = Math.max(1, Math.ceil(baseDt / maxStep));
