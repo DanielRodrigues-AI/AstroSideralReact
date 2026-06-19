@@ -2,11 +2,15 @@ import { Body } from "../entities/Body";
 import type { ForceSystem } from "./ForceSystem";
 export class GravitySystem implements ForceSystem {
   private G = 700;
+  private softening: number;
 
-  constructor() {}
+  constructor(softening = 50) {
+    this.softening = softening;
+  }
 
   update(bodies: Body[], _dt: number) {
     const G = this.G;
+    const softening = this.softening;
 
     for (let i = 0; i < bodies.length; i++) {
       for (let j = i + 1; j < bodies.length; j++) {
@@ -18,17 +22,17 @@ export class GravitySystem implements ForceSystem {
 
         const distSq = dx * dx + dy * dy;
 
-        if (distSq < 1) continue;
+        const minDistSq = 0.25; // evita explosão numérica em proximidade extrema
+        const safeDistSq = Math.max(distSq, minDistSq);
 
-        const distance = Math.sqrt(distSq);
+        const distance = Math.sqrt(safeDistSq);
 
-        const softening = 50;
-        const force = (G * a.mass * b.mass) / (distSq + softening * softening);
+        const force =
+          (G * a.mass * b.mass) / (safeDistSq + softening * softening);
 
         const fx = (force * dx) / distance;
         const fy = (force * dy) / distance;
 
-        // força NÃO deve ser escalada por dt aqui (já entra no integrador)
         a.applyForce(fx, fy);
         b.applyForce(-fx, -fy);
       }

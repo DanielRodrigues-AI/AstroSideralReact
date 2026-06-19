@@ -221,7 +221,7 @@ function App() {
     const sun = bodies[0];
     camera.viewportWidth = canvas.width;
     camera.viewportHeight = canvas.height;
-    const systems: ForceSystem[] = [new GravitySystem()];
+    const systems: ForceSystem[] = [new GravitySystem(50)];
     const collisionSystem = new CollisionSystem(entityManager);
     const energyCalculator = new EnergyCalculator(700);
     const renderer = new CanvasRenderer(

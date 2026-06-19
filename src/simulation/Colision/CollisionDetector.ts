@@ -17,7 +17,8 @@ export class CollisionDetector {
         const dx = b.x - a.x;
         const dy = b.y - a.y;
 
-        const distance = Math.sqrt(dx * dx + dy * dy);
+        const distSq = dx * dx + dy * dy;
+        const distance = Math.sqrt(Math.max(distSq, 0.0001));
 
         if (distance <= a.radius + b.radius) {
           collisions.push({ a, b });
