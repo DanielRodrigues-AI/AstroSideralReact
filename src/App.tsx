@@ -17,6 +17,7 @@ import { HotkeyManager } from "./ui/controls/HotkeyManager";
 import { VelocityVerletIntegrator } from "./simulation/systems/VelocityVerletIntegrator";
 import { EulerIntegrator } from "./simulation/systems/EulerIntegrator";
 import { CollisionSystem } from "./simulation/Colision/CollisionSystem";
+import { EnergyCalculator } from "./simulation/physics/EnergyCalculator";
 
 function App() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -49,6 +50,9 @@ function App() {
     const hotkeys = new HotkeyManager();
     const cameraTarget = new CameraTarget();
     const trailManager = new TrailManager();
+
+    let energyTimer = 0;
+    //let energyTimer = 0; gera log sobre energia gravitacional armazenada
     hotkeys.bind("f", () => {
       const selected = selectionManager.getSelected();
 
@@ -219,7 +223,7 @@ function App() {
     camera.viewportHeight = canvas.height;
     const systems: ForceSystem[] = [new GravitySystem()];
     const collisionSystem = new CollisionSystem(entityManager);
-
+    const energyCalculator = new EnergyCalculator(700);
     const renderer = new CanvasRenderer(
       ctx,
       bodies,
@@ -298,6 +302,15 @@ function App() {
           camera.x = sun.x;
           camera.y = sun.y;
         }
+        //log sobre energia total armazenada
+        energyTimer += dt;
+
+        if (energyTimer >= 1) {
+          const energy = energyCalculator.calculate(bodies);
+          console.log("Energy:", energy);
+          energyTimer = 0;
+        }
+        // log sobre energia gravitacional armazenada 
       },
       () => {
         renderer.render();
