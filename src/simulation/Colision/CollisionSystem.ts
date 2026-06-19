@@ -1,51 +1,75 @@
 import { Body } from "../entities/Body";
+import { EntityManager } from "../entities/EntityManager";
 import { CollisionDetector } from "./CollisionDetector";
+
+export type MergeResult = {
+  oldA: Body;
+  oldB: Body;
+  merged: Body;
+};
 
 export class CollisionSystem {
   private detector = new CollisionDetector();
 
-  update(bodies: Body[]): void {
-    const collisions = this.detector.detect(bodies);
+  private entityManager: EntityManager;
 
-    for (const collision of collisions) {
-      this.handleCollision(collision.a, collision.b);
-    }
+  constructor(entityManager: EntityManager) {
+    this.entityManager = entityManager;
   }
 
-  private handleCollision(a: Body, b: Body): void {
-    if ((a.parent === b && a.lockOrbit) || (b.parent === a && b.lockOrbit)) {
-      return;
+  update(bodies: Body[]): MergeResult[] {
+    const collisions = this.detector.detect(bodies);
+    const merges: MergeResult[] = [];
+
+    for (const collision of collisions) {
+      const merge = this.handleCollision(collision.a, collision.b);
+
+      if (merge) merges.push(merge);
     }
 
-    const dx = b.x - a.x;
-    const dy = b.y - a.y;
+    return merges;
+  }
 
-    const distance = Math.sqrt(dx * dx + dy * dy);
-    if (distance === 0) return;
+  private handleCollision(a: Body, b: Body): MergeResult | null {
+    if ((a.parent === b && a.lockOrbit) || (b.parent === a && b.lockOrbit)) {
+      return null;
+    }
+    if (
+      !this.entityManager.getBodies().includes(a) ||
+      !this.entityManager.getBodies().includes(b)
+    ) {
+      return null;
+    }
+    const mass = a.mass + b.mass;
+    let x = (a.x * a.mass + b.x * b.mass) / mass;
+    let y = (a.y * a.mass + b.y * b.mass) / mass;
 
-    const nx = dx / distance;
-    const ny = dy / distance;
+    let vx = (a.vx * a.mass + b.vx * b.mass) / mass;
+    let vy = (a.vy * a.mass + b.vy * b.mass) / mass;
 
-    const rvx = b.vx - a.vx;
-    const rvy = b.vy - a.vy;
+    // Se um dos corpos é o Sol, ele permanece fixo.
+    if (a.mass > 6000) {
+      x = a.x;
+      y = a.y;
+      vx = 0;
+      vy = 0;
+    } else if (b.mass > 6000) {
+      x = b.x;
+      y = b.y;
+      vx = 0;
+      vy = 0;
+    }
 
-    const velocityAlongNormal = rvx * nx + rvy * ny;
+    const merged = new Body(x, y, mass, vx, vy);
 
-    if (velocityAlongNormal > 0) return;
+    this.entityManager.removeBody(a);
+    this.entityManager.removeBody(b);
+    this.entityManager.addBody(merged);
 
-    const restitution = 1;
-
-    const impulse =
-      (-(1 + restitution) * velocityAlongNormal) /
-      (1 / a.mass + 1 / b.mass);
-
-    const impulseX = impulse * nx;
-    const impulseY = impulse * ny;
-
-    a.vx -= impulseX / a.mass;
-    a.vy -= impulseY / a.mass;
-
-    b.vx += impulseX / b.mass;
-    b.vy += impulseY / b.mass;
+    return {
+      oldA: a,
+      oldB: b,
+      merged,
+    };
   }
 }

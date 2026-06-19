@@ -218,7 +218,7 @@ function App() {
     camera.viewportWidth = canvas.width;
     camera.viewportHeight = canvas.height;
     const systems: ForceSystem[] = [new GravitySystem()];
-    const collisionSystem = new CollisionSystem();
+    const collisionSystem = new CollisionSystem(entityManager);
 
     const renderer = new CanvasRenderer(
       ctx,
@@ -253,7 +253,27 @@ function App() {
 
           integrator.beginStep(b, dt);
         }
-        collisionSystem.update(bodies);
+        const merges = collisionSystem.update(bodies);
+
+        for (const merge of merges) {
+          trailManager.clear(merge.oldA);
+          trailManager.clear(merge.oldB);
+
+          if (
+            selectionManager.getSelected() === merge.oldA ||
+            selectionManager.getSelected() === merge.oldB
+          ) {
+            selectionManager.select(merge.merged);
+            setSelectedBody(merge.merged);
+          }
+
+          if (
+            cameraTarget.get() === merge.oldA ||
+            cameraTarget.get() === merge.oldB
+          ) {
+            cameraTarget.set(merge.merged);
+          }
+        }
         for (const b of bodies) {
           b.ax = 0;
           b.ay = 0;
