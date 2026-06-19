@@ -34,10 +34,7 @@ export class CanvasRenderer {
       const x = this.camera.worldToScreenX(b.x);
       const y = this.camera.worldToScreenY(b.y);
 
-      const radius =
-        b.mass > 6000 ? 16 : b.mass > 1000 ? 10 : b.mass > 3 ? 4 : 2;
-
-      this.ctx.arc(x, y, radius * this.camera.zoom, 0, Math.PI * 2);
+      this.ctx.arc(x, y, b.renderRadius * this.camera.zoom, 0, Math.PI * 2);
 
       this.ctx.fillStyle =
         b.mass > 6000
@@ -52,7 +49,7 @@ export class CanvasRenderer {
         this.ctx.arc(
           x,
           y,
-          ((b.mass > 1000 ? 12 : 4) + 6) * this.camera.zoom,
+          (b.renderRadius + 6) * this.camera.zoom,
           0,
           Math.PI * 2,
         );

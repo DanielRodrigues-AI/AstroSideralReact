@@ -19,22 +19,12 @@ export class CollisionDetector {
 
         const distance = Math.sqrt(dx * dx + dy * dy);
 
-        const radiusA = this.getRadius(a);
-        const radiusB = this.getRadius(b);
-
-        if (distance <= radiusA + radiusB) {
+        if (distance <= a.radius + b.radius) {
           collisions.push({ a, b });
         }
       }
     }
 
     return collisions;
-  }
-
-  private getRadius(body: Body): number {
-    if (body.mass > 6000) return 16;
-    if (body.mass > 1000) return 10;
-    if (body.mass > 3) return 4;
-    return 2;
   }
 }

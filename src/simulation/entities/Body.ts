@@ -6,6 +6,8 @@ export class Body {
   vy: number;
 
   mass: number;
+  radius: number;
+  renderRadius: number;
 
   parent: Body | null = null;
 
@@ -21,6 +23,8 @@ export class Body {
     vx = 0,
     vy = 0,
     parent: Body | null = null,
+    radius?: number,
+    renderRadius?: number,
   ) {
     this.x = x;
     this.y = y;
@@ -28,14 +32,17 @@ export class Body {
     this.vy = vy;
     this.mass = mass;
     this.parent = parent;
-  }
 
+    this.radius =
+      radius ?? (mass > 6000 ? 16 : mass > 1000 ? 10 : mass > 3 ? 4 : 2);
+    this.renderRadius = renderRadius ?? this.radius;
+  }
   ax = 0;
   ay = 0;
 
   previousAx = 0;
   previousAy = 0;
-  
+
   applyForce(fx: number, fy: number) {
     this.ax += fx / this.mass;
     this.ay += fy / this.mass;
