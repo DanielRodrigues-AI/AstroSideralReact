@@ -116,14 +116,16 @@ function App() {
       const worldX = selected.x + Math.cos(angle) * distance;
       const worldY = selected.y + Math.sin(angle) * distance;
 
-      const { vx, vy } = calculateOrbitalVelocity(
-        selected.x,
-        selected.y,
-        worldX,
-        worldY,
-        selected.mass,
-        700,
-      );
+      const G = 700;
+
+      const dx = worldX - selected.x;
+      const dy = worldY - selected.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+
+      const speed = Math.sqrt((G * selected.mass) / dist) * 0.98;
+
+      const vx = (-dy / dist) * speed + selected.vx;
+      const vy = (dx / dist) * speed + selected.vy;
 
       const lua = new Body(worldX, worldY, 2, vx, vy, selected);
       lua.parent = selected;

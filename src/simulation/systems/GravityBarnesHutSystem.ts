@@ -14,8 +14,8 @@ export class GravityBarnesHutSystem implements ForceProvider {
     centerX: number,
     centerY: number,
     worldSize: number,
-    softening = 50,
-    theta = 0.5,
+    softening = 25,
+    theta = 0.3,
   ) {
     this.softening = softening;
     this.theta = theta;
